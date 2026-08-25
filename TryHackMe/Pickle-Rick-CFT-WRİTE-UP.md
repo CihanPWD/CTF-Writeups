@@ -130,3 +130,184 @@ An unauthenticated attacker capable of discovering this information could potent
 - Review publicly accessible resources for sensitive information disclosure.
 - Credentials should be stored securely and should never be exposed in application resources or source files.
 
+## 8 Initial Command Execution
+After obtaining authenticated access to the application, I identified an input field that appeared to process system commands.
+As an initial test, I submitted a basic operating system command through the available input field.
+<img width="1890" height="773" alt="ls" src="https://github.com/user-attachments/assets/397135be-85bf-4c92-ad79-ce3e9f68ccca" />
+The command was successfully executed and the response returned a list of files located on the underlying server.
+This confirmed that the application was capable of processing user-controlled input as operating system commands.
+
+### 8.1 File Access Testing
+Following the initial command execution, I attempted to read the contents of the discovered files.
+<img width="1664" height="561" alt="no" src="https://github.com/user-attachments/assets/a5018441-eff5-4e93-83c9-1c2a9f279daf" />
+Although the command was executed, the contents of the targeted files could not be successfully retrieved.
+This indicated that command execution was possible, while access to certain files was restricted by the current execution context or file permissions.
+
+## 9. OS Command Injection
+
+After confirming that the application was executing user-controlled commands, I investigated whether the existing command could be manipulated to execute an additional command.
+
+### 9.1 Reverse Shell Payload Preparation
+
+To demonstrate the impact of the command injection vulnerability, I prepared a PHP-based reverse shell payload using a reverse-shell payload generation resource.
+
+<img width="1766" height="929" alt="rce genarator" src="https://github.com/user-attachments/assets/38ed3e46-4416-4080-b1a8-47ea2c8584d2" />
+
+The generated payload was prepared to establish an outbound connection to the assessment machine.
+
+### 9.2 Command Injection and Reverse Shell
+
+The vulnerable input was then used to append the reverse shell command to the application's existing command execution flow.
+
+<img width="1916" height="838" alt="nc dinleyici" src="https://github.com/user-attachments/assets/e6a3c564-4373-43ec-ac1c-0c79ce02e954" />
+
+The command was successfully processed by the target, and a reverse shell connection was established on the assessment machine.
+
+This confirmed that the previously identified command injection vulnerability could be leveraged to obtain interactive access to the underlying server.
+
+### 9.3 Finding Summary
+
+**Finding:** OS Command Injection  
+**Severity:** Critical  
+**Impact:** Arbitrary command execution and remote shell access
+
+The vulnerability allows attacker-controlled input to influence commands executed by the underlying operating system. In this assessment, successful exploitation resulted in a reverse shell, demonstrating that the issue could lead to full compromise of the application host depending on the privileges of the compromised process.
+
+## 10. Post-Exploitation Enumeration
+
+After successfully establishing a reverse shell, the next step was to perform basic enumeration of the compromised environment.
+
+### 10.1 Current User and Privileges
+
+The `id` command was executed to determine the user associated with the current shell session and identify the available privileges.
+
+<img width="891" height="430" alt="id" src="https://github.com/user-attachments/assets/e91338c9-62aa-4a43-b635-7deb2cbc91d6" />
+
+The output showed that the shell was running with limited privileges rather than with administrative or root-level access.
+
+This confirmed that the initial shell did not provide privileged access to the system. Further enumeration was therefore required to identify relevant files, clues, or potential privilege escalation opportunities.
+
+### 10.2 Initial CTF Ingredient
+
+During the initial enumeration, the first required CTF ingredient was discovered: **meeseek hair**.
+
+The discovered item was recorded as the first required ingredient for completing the challenge.
+
+### 10.3 Reading `clue.txt`
+
+Further investigation identified a file named `clue.txt`. The contents of the file were examined to determine the next step of the challenge.
+
+The file contained the following instruction:
+
+> **Look around the file system for the other ingredient.**
+
+This indicated that another required ingredient was located somewhere within the filesystem.
+
+Based on this clue, the next stage of the assessment focused on further filesystem enumeration to locate the remaining ingredient.
+
+## 10.4 Filesystem Enumeration
+
+Following the instruction found in `clue.txt`, further enumeration of the filesystem was performed to locate the remaining ingredient.
+
+The filesystem was explored by examining accessible directories and their contents. During this process, the `/home/rick` directory was identified as containing the second required ingredient.
+
+The contents of the files within the directory were then inspected using the `cat *` command.
+
+<img width="360" height="265" alt="2 ci" src="https://github.com/user-attachments/assets/16e7ebba-6437-414d-9000-4024b904c02a" />
+
+The command successfully displayed the contents of the accessible files, revealing the second required CTF ingredient.
+
+This confirmed that the clue obtained earlier could be followed through filesystem enumeration and that the current shell privileges were sufficient to access the relevant files under `/home/rick`.
+
+At this stage, two of the required ingredients had been identified, and the enumeration continued to locate the remaining objectives.
+
+## 11. Privilege Escalation
+
+After obtaining a low-privileged reverse shell, the next objective was to access the `/root` directory and retrieve the final CTF flag.
+
+Access to the `/root` directory was initially restricted because the current shell did not have sufficient privileges. Therefore, further enumeration was performed to identify potential local privilege escalation opportunities.
+
+### 11.1 Sudo Privilege Enumeration
+
+The `sudo -l` command was executed to enumerate the commands that the current user was authorized to execute with elevated privileges.
+
+<img width="947" height="249" alt="yetki yükseltme" src="https://github.com/user-attachments/assets/ac38cfc1-6054-48bd-8aaa-caac87ede584" />
+
+The output revealed that the current user was permitted to execute `/bin/sh` through `sudo` with elevated privileges.
+
+This configuration represented a potential privilege escalation path because the permitted shell could be executed with the privileges of the `root` user.
+
+### 11.2 Exploiting the Sudo Misconfiguration
+
+The identified sudo configuration was then investigated using the corresponding technique documented by GTFOBins.
+
+<img width="1389" height="816" alt="shell" src="https://github.com/user-attachments/assets/4d90def3-82bb-473d-bc50-b2b73be19424" />
+
+Based on the documented technique, the permitted shell was executed through `sudo` using:
+
+```bash id="j4yq7k"
+sudo /bin/sh
+```
+
+The command executed successfully and resulted in a shell with **root-level privileges**.
+
+This confirmed that the identified sudo configuration could be abused to escalate privileges from the initial low-privileged account to `root`.
+
+### 11.3 Accessing the Final Flag
+
+After obtaining root-level access, the previously restricted `/root` directory became accessible.
+
+The directory was enumerated and the final CTF flag was successfully located.
+
+<img width="602" height="107" alt="3rd" src="https://github.com/user-attachments/assets/62183ba7-9d87-4422-908d-6d2b3c932807" />
+
+The successful retrieval of the final flag confirmed that the privilege escalation was successful and that full administrative access to the target system had been obtained.
+
+### 11.4 Final Result
+
+The complete exploitation chain identified throughout the assessment was:
+
+**Network Reconnaissance**
+↓
+**Web Application Enumeration**
+↓
+**Source Code Inspection**
+↓
+**Username Discovery**
+↓
+**Directory and File Enumeration**
+↓
+**Authentication Endpoint Discovery**
+↓
+**`robots.txt` Information Disclosure**
+↓
+**Credential Discovery and Validation**
+↓
+**Authenticated Application Access**
+↓
+**OS Command Execution**
+↓
+**OS Command Injection**
+↓
+**Reverse Shell**
+↓
+**Post-Exploitation Enumeration**
+↓
+**CTF Ingredient Discovery**
+↓
+**Sudo Enumeration**
+↓
+**Sudo Misconfiguration Identified**
+↓
+**Privilege Escalation**
+↓
+**Root Shell**
+↓
+**Final Flag**
+
+The successful exploitation of the identified weaknesses demonstrated that the vulnerabilities could be chained together to progress from initial reconnaissance and unauthenticated web access to authenticated application access, arbitrary operating system command execution, interactive shell access, and ultimately root-level privileges.
+
+The successful escalation from the initial web application compromise to `root` demonstrated that the identified vulnerabilities could be leveraged to achieve complete compromise of the target host.
+
+All three required CTF ingredients were successfully identified, and the final flag was recovered from the `/root` directory, completing the assessment within the authorized TryHackMe CTF environment.
+
