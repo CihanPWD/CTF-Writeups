@@ -267,43 +267,7 @@ The successful retrieval of the final flag confirmed that the privilege escalati
 
 The complete exploitation chain identified throughout the assessment was:
 
-**Network Reconnaissance**
-↓
-**Web Application Enumeration**
-↓
-**Source Code Inspection**
-↓
-**Username Discovery**
-↓
-**Directory and File Enumeration**
-↓
-**Authentication Endpoint Discovery**
-↓
-**`robots.txt` Information Disclosure**
-↓
-**Credential Discovery and Validation**
-↓
-**Authenticated Application Access**
-↓
-**OS Command Execution**
-↓
-**OS Command Injection**
-↓
-**Reverse Shell**
-↓
-**Post-Exploitation Enumeration**
-↓
-**CTF Ingredient Discovery**
-↓
-**Sudo Enumeration**
-↓
-**Sudo Misconfiguration Identified**
-↓
-**Privilege Escalation**
-↓
-**Root Shell**
-↓
-**Final Flag**
+**Network Reconnaissance → Web Application Enumeration → Source Code Inspection → Username Discovery → Directory and File Enumeration → Authentication Endpoint Discovery → `robots.txt` Information Disclosure → Credential Discovery and Validation → Authenticated Application Access → OS Command Execution → OS Command Injection → Reverse Shell → Post-Exploitation Enumeration → CTF Ingredient Discovery → Sudo Enumeration → Sudo Misconfiguration Identified → Privilege Escalation → Root Shell → Final Flag**
 
 The successful exploitation of the identified weaknesses demonstrated that the vulnerabilities could be chained together to progress from initial reconnaissance and unauthenticated web access to authenticated application access, arbitrary operating system command execution, interactive shell access, and ultimately root-level privileges.
 
