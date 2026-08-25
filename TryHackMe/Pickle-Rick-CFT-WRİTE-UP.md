@@ -263,7 +263,7 @@ The directory was enumerated and the final CTF flag was successfully located.
 
 The successful retrieval of the final flag confirmed that the privilege escalation was successful and that full administrative access to the target system had been obtained.
 
-### 11.4 Final Result
+## 12 Final Result
 
 The complete exploitation chain identified throughout the assessment was:
 
